@@ -3,8 +3,8 @@
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
-import { parseMarkdown } from "./parser";
-import { renderSlides } from "./renderer";
+import { parseMarkdown } from "./parser.js";
+import { renderSlides } from "./renderer.js";
 
 const filePath = process.argv[2];
 

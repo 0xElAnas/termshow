@@ -30,14 +30,20 @@ renderer.em = (text: string) => chalk.italic(text);
 
 // Style code blocks
 renderer.code = (code: string, language?: string) => {
-  if (language) {
-    return chalk.gray(`\n${code}\n`);
+  if (language === 'sh' || language === 'bash') {
+    // Special handling for command blocks
+    return `\n${chalk.green('$')} ${chalk.yellow(code)}\n`;
   }
-  return chalk.gray(`\`${code}\``);
+  return chalk.gray(`\n${code}\n`);
 };
 
 // Style inline code
 renderer.codespan = (code: string) => {
+  // Check if it's an inline command (starts with $)
+  if (code.startsWith('$ ')) {
+    const command = code.slice(2); // Remove the $ prefix
+    return chalk.green('$') + ' ' + chalk.yellow(command);
+  }
   return chalk.gray(`\`${code}\``);
 };
 
@@ -126,7 +132,19 @@ marked.setOptions({
   smartypants: true,
 });
 
-export function parseMarkdown(md: string): string[] {
+export interface CommandBlock {
+  command: string;
+  autoExecute: boolean;
+  inline?: boolean; // New field for inline commands
+}
+
+export interface Slide {
+  title: string;
+  content: string;
+  commands: CommandBlock[];
+}
+
+export function parseMarkdown(md: string): Slide[] {
   // Split slides by delimiter (three dashes on their own line)
   return md
     .split("\n---\n")
@@ -138,16 +156,53 @@ export function parseMarkdown(md: string): string[] {
       const lines = html.split('\n');
       const titleLine = lines.find(line => line.trim() && !line.includes('─'));
       
+      // Extract command blocks
+      const commands: CommandBlock[] = [];
+      
+      // Extract code blocks
+      const codeBlocks = slide.match(/```(?:sh|bash)\n([\s\S]*?)```/g) || [];
+      codeBlocks.forEach(block => {
+        const command = block.replace(/```(?:sh|bash)\n/, '').replace(/```$/, '').trim();
+        const autoExecute = command.startsWith('!');
+        commands.push({
+          command: autoExecute ? command.slice(1) : command,
+          autoExecute
+        });
+      });
+      
+      // Extract inline commands
+      const inlineCommands = slide.match(/`\$ [^`]+`/g) || [];
+      inlineCommands.forEach(cmd => {
+        const command = cmd.replace(/`\$ /, '').replace(/`$/, '').trim();
+        commands.push({
+          command,
+          autoExecute: false,
+          inline: true
+        });
+      });
+      
       if (titleLine) {
         // Keep the styled title as is
         const content = lines
           .filter(line => line !== titleLine && line.trim())
           .join('\n');
-        return `${titleLine}\n${content}`;
+        return {
+          title: titleLine,
+          content,
+          commands
+        };
       }
       
-      return html;
+      return {
+        title: '',
+        content: html,
+        commands
+      };
     })
-    .map((slide) => slide.trim())
-    .filter(Boolean);
+    .map(slide => ({
+      ...slide,
+      title: slide.title.trim(),
+      content: slide.content.trim()
+    }))
+    .filter(slide => slide.title || slide.content);
 }
