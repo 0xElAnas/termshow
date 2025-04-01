@@ -1,5 +1,11 @@
 # TermShow
 
+[![CI](https://github.com/0xElAnas/termshow/actions/workflows/ci.yml/badge.svg)](https://github.com/0xElAnas/termshow/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/termshow.svg)](https://www.npmjs.com/package/termshow)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/0xElAnas/termshow/graphs/commit-activity)
+
 TermShow is a powerful CLI tool for creating terminal-based presentations with live coding support. It allows you to create interactive presentations using Markdown, execute commands live, and demonstrate coding concepts in real-time.
 
 ## Features
@@ -85,12 +91,41 @@ Check out the `examples/` directory for sample presentations:
 
 ### Project Structure
 
-- `src/`: Source code
-  - `cli.ts`: CLI entry point
-  - `parser.ts`: Markdown parsing and command extraction
-  - `renderer.ts`: Terminal rendering and command execution
-- `examples/`: Sample presentations
-- `bin/`: Binary scripts
+```
+termshow/
+├── src/                    # Source code
+│   ├── cli.ts             # CLI entry point
+│   ├── parser.ts          # Markdown parsing and command extraction
+│   └── renderer.ts        # Terminal rendering and command execution
+├── examples/              # Example presentations
+│   ├── presentation.md    # Basic presentation example
+│   ├── commands.md        # Command execution examples
+│   ├── nodejs.md          # Node.js tutorial example
+│   └── system.md          # System commands demonstration
+├── bin/                   # Binary scripts
+│   └── termshow.js        # CLI executable
+├── dist/                  # Compiled JavaScript
+├── .github/              # GitHub specific files
+│   ├── workflows/        # GitHub Actions workflows
+│   │   ├── ci.yml       # Continuous Integration
+│   │   └── publish.yml  # Automated publishing
+│   └── ISSUE_TEMPLATE/  # Issue templates
+│       ├── bug_report.md
+│       └── feature_request.md
+├── tests/                # Test files
+├── .gitignore           # Git ignore rules
+├── .eslintrc.json      # ESLint configuration
+├── .prettierrc         # Prettier configuration
+├── jest.config.js      # Jest configuration
+├── tsconfig.json       # TypeScript configuration
+├── package.json        # Project configuration and dependencies
+├── package-lock.json   # Dependency lock file
+├── README.md           # Project documentation
+├── CHANGELOG.md        # Version history
+├── CONTRIBUTING.md     # Contribution guidelines
+├── CODE_OF_CONDUCT.md  # Code of conduct
+└── LICENSE             # MIT License
+```
 
 ## License
 
