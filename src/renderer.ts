@@ -2,11 +2,18 @@ import chalk from "chalk";
 import { Slide } from "./types/index.js";
 import { executeCommand, executeCommands } from "./commands/executor.js";
 import { renderTitle, renderNavigationBar, renderCommandsInfo, renderCommandInstructions } from "./ui/components.js";
+import { terminateActiveProcess, hasActiveProcess } from "./commands/live-executor.js";
 
 export function renderSlides(slides: Slide[]) {
   let index = 0;
+  let isExecuting = false;
 
   async function showSlide() {
+    // Terminate any running process when changing slides
+    if (hasActiveProcess()) {
+      terminateActiveProcess();
+    }
+
     console.clear();
     console.log("\n"); // Add some padding at the top
     
@@ -47,7 +54,22 @@ export function renderSlides(slides: Slide[]) {
   }
 
   async function handleInput(key: string) {
-    if (key === "\u0003" || key === "q") process.exit(); // Ctrl+C or q to quit
+    if (key === "\u0003" || key === "q") {
+      // Terminate any running process before exiting
+      if (hasActiveProcess()) {
+        terminateActiveProcess();
+      }
+      process.exit();
+    }
+
+    // If a command is running, any key press should terminate it
+    if (hasActiveProcess()) {
+      terminateActiveProcess();
+      isExecuting = false;
+      showSlide();
+      return;
+    }
+
     if (key === "\u001B[D" && index > 0) index--; // Left arrow
     if (key === "\u001B[C" && index < slides.length - 1) index++; // Right arrow
     
@@ -57,17 +79,24 @@ export function renderSlides(slides: Slide[]) {
     if (key === "\r" || key === "\n") { // Enter key
       // Execute all non-inline commands
       if (executableCommands.length > 0) {
+        isExecuting = true;
+        console.log(chalk.cyan('\nExecuting commands...'));
+        console.log(chalk.dim('Press any key to stop the process\n'));
         await executeCommands(executableCommands);
+        isExecuting = false;
         return; // Wait for key press before showing slide
       }
     } else if (executableCommands.length > 1 && /^[1-9]$/.test(key)) { // Number keys 1-9
       const commandIndex = parseInt(key) - 1;
       if (commandIndex < executableCommands.length) {
         const cmd = executableCommands[commandIndex];
-        console.log('\n' + chalk.dim(`Executing command ${commandIndex + 1}...`) + '\n');
+        isExecuting = true;
+        console.log('\n' + chalk.cyan(`Executing command ${commandIndex + 1}...`) + '\n');
         console.log(chalk.green('$') + ' ' + chalk.yellow(cmd.command));
+        console.log(chalk.dim('Press any key to stop the process\n'));
         const output = await executeCommand(cmd.command);
         console.log(output);
+        isExecuting = false;
         console.log('\n' + chalk.dim('Press any key to continue...'));
         return; // Wait for key press before showing slide
       }
