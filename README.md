@@ -69,7 +69,7 @@ Check out the `examples/` directory for sample presentations:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/termshow.git
+   git clone https://github.com/0xElAnas/termshow.git
    cd termshow
    ```
 
