@@ -12,7 +12,6 @@ TermShow is a powerful CLI tool for creating terminal-based presentations with l
 
 - 📝 Markdown-based slides with syntax highlighting
 - 🚀 Live command execution within slides
-- ⚡ Auto-execution support for commands
 - 🛑 Process termination with any key press
 - 📊 Visual indicators for running commands
 - ⌨️ Simple keyboard navigation
@@ -49,16 +48,17 @@ termshow presentation.md
 Regular markdown content...
 
 ```bash
-# Command blocks with auto-execution
+# Command blocks
 $ echo "Hello World"
 ```
 
 ```bash
-# Command blocks with manual execution
+# Multiple commands
 $ sleep 5
+$ echo "Done"
 ```
 
-> Note: Commands starting with `$` will be executable. Use `$` for auto-executing commands and `$` for manual execution.
+> Note: Commands starting with `$` will be executable. Press Enter to execute commands or use number keys for specific commands.
 
 ## Examples
 
