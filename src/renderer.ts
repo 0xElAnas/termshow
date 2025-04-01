@@ -1,48 +1,20 @@
 import chalk from "chalk";
-import { execaCommand } from "execa";
-import { Slide, CommandBlock } from "./parser.js";
+import { Slide } from "./types/index.js";
+import { executeCommand, executeCommands } from "./commands/executor.js";
+import { renderTitle, renderNavigationBar, renderCommandsInfo, renderCommandInstructions } from "./ui/components.js";
 
 export function renderSlides(slides: Slide[]) {
   let index = 0;
-  let currentProcess: any = null;
-
-  async function executeCommand(command: string): Promise<string> {
-    try {
-      const { stdout } = await execaCommand(command);
-      return stdout;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return `Error: ${error.message}`;
-      }
-      return `Error: Unknown error occurred`;
-    }
-  }
 
   async function showSlide() {
     console.clear();
-    
-    // Add some padding at the top
-    console.log("\n");
+    console.log("\n"); // Add some padding at the top
     
     const slide = slides[index];
     
-    // Extract the title and render it with beautiful styling
+    // Render title if exists
     if (slide.title) {
-      // Extract the text content from the styled title
-      const titleText = slide.title
-        .replace(/\u001b\[\d+m/g, '') // Remove ANSI color codes
-        .replace(/^#+\s*/, '') // Remove markdown headings
-        .trim();
-      
-      // Calculate the width for the title box
-      const width = Math.max(titleText.length + 4, 50);
-      const padding = Math.floor((width - titleText.length) / 2);
-      
-      // Create a beautiful title box
-      console.log(chalk.cyan('┌' + '─'.repeat(width - 2) + '┐'));
-      console.log(chalk.cyan('│') + ' '.repeat(padding) + chalk.cyan.bold(titleText) + ' '.repeat(width - padding - titleText.length - 2) + chalk.cyan('│'));
-      console.log(chalk.cyan('└' + '─'.repeat(width - 2) + '┘'));
-      console.log('\n'); // Add spacing after title
+      console.log(renderTitle(slide.title));
     }
     
     // Render the content
@@ -51,42 +23,20 @@ export function renderSlides(slides: Slide[]) {
     // Display commands if any
     const executableCommands = slide.commands.filter(cmd => !cmd.inline);
     if (executableCommands.length > 0) {
-      console.log('\n' + chalk.dim('┌──────────────────────────────────────────┐'));
-      console.log(chalk.dim('│') + chalk.cyan(` ${executableCommands.length} command${executableCommands.length > 1 ? 's' : ''} available `) + chalk.dim('│'));
-      console.log(chalk.dim('└──────────────────────────────────────────┘\n'));
+      console.log(renderCommandsInfo(executableCommands.length));
       
-      executableCommands.forEach((cmd, i) => {
-        console.log(chalk.dim(`[${i + 1}] `) + chalk.green('$') + ' ' + chalk.yellow(cmd.command));
+      executableCommands.forEach((cmd) => {
+        console.log(chalk.dim(`[${cmd.number}]`) + ' ' + chalk.green('$') + ' ' + chalk.yellow(cmd.command));
       });
       
-      // Different instructions based on number of commands
-      if (executableCommands.length === 1) {
-        console.log(chalk.dim('\nPress [Enter] to execute command'));
-      } else {
-        console.log(chalk.dim('\nPress [Enter] to execute all commands'));
-        console.log(chalk.dim('Or press [1-9] to execute a specific command'));
-      }
+      console.log(renderCommandInstructions(executableCommands.length));
     }
     
     // Add some padding at the bottom
     console.log("\n");
     
-    // Progress indicator
-    const progress = chalk.dim(`Slide ${index + 1}/${slides.length}`);
-    
-    // Navigation buttons with ASCII art style
-    const prevBtn = index > 0 ? chalk.cyan("◀") : chalk.gray("◀");
-    const nextBtn = index < slides.length - 1 ? chalk.cyan("▶") : chalk.gray("▶");
-    const quitBtn = chalk.red("✕");
-    
     // Navigation bar with progress
-    console.log(
-      chalk.dim("Navigation: ") +
-      `${prevBtn} ${chalk.dim("Previous")}  |  ` +
-      `${nextBtn} ${chalk.dim("Next")}  |  ` +
-      `${quitBtn} ${chalk.dim("Quit")}  |  ` +
-      progress
-    );
+    console.log(renderNavigationBar(index, slides.length));
 
     // Setup keyboard input
     process.stdin.setRawMode(true);
@@ -107,16 +57,10 @@ export function renderSlides(slides: Slide[]) {
     if (key === "\r" || key === "\n") { // Enter key
       // Execute all non-inline commands
       if (executableCommands.length > 0) {
-        console.log('\n' + chalk.dim('Executing commands...') + '\n');
-        for (const cmd of executableCommands) {
-          console.log(chalk.green('$') + ' ' + chalk.yellow(cmd.command));
-          const output = await executeCommand(cmd.command);
-          console.log(output);
-        }
-        console.log('\n' + chalk.dim('Press any key to continue...'));
+        await executeCommands(executableCommands);
         return; // Wait for key press before showing slide
       }
-    } else if (executableCommands.length > 1 && /^[1-9]$/.test(key)) { // Number keys 1-9 only if multiple commands
+    } else if (executableCommands.length > 1 && /^[1-9]$/.test(key)) { // Number keys 1-9
       const commandIndex = parseInt(key) - 1;
       if (commandIndex < executableCommands.length) {
         const cmd = executableCommands[commandIndex];
