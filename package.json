@@ -1,6 +1,6 @@
 {
   "name": "termshow",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "A powerful CLI tool for creating terminal-based presentations with live coding support, featuring auto-execution, process management, and beautiful terminal UI.",
   "main": "dist/cli.js",
   "type": "module",
