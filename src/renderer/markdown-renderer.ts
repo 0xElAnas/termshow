@@ -1,8 +1,23 @@
 import { marked, Renderer } from "marked";
 import chalk from "chalk";
 
+// Define custom renderer interface
+interface CustomRenderer extends Renderer {
+  b: (text: string) => string;
+  i: (text: string) => string;
+  a: (text: string, href: string) => string;
+  s: (text: string) => string;
+  small: (text: string) => string;
+  mark: (text: string) => string;
+  sub: (text: string) => string;
+  sup: (text: string) => string;
+  dl: (text: string) => string;
+  dt: (text: string) => string;
+  dd: (text: string) => string;
+}
+
 // Custom renderer for terminal output
-const renderer = new Renderer();
+const renderer = new Renderer() as CustomRenderer;
 
 // Style headers
 renderer.heading = (text: string, level: number) => {
@@ -20,11 +35,11 @@ renderer.paragraph = (text: string) => `${text}\n\n`;
 
 // Style bold text
 renderer.strong = (text: string) => chalk.bold(text);
-(renderer as any).b = (text: string) => chalk.bold(text);
+renderer.b = (text: string) => chalk.bold(text);
 
 // Style italic text
 renderer.em = (text: string) => chalk.italic(text);
-(renderer as any).i = (text: string) => chalk.italic(text);
+renderer.i = (text: string) => chalk.italic(text);
 
 // Style code blocks
 renderer.code = (code: string, language?: string) => {
@@ -44,7 +59,7 @@ renderer.codespan = (code: string) => {
 };
 
 // Style lists and list items
-renderer.list = (body: string, ordered: boolean) => {
+renderer.list = (body: string, _ordered: boolean) => {
   const lines = body.split('\n').filter(Boolean);
   return lines.map(line => {
     const indentLevel = (line.match(/^\s*/)?.[0]?.length || 0) / 2;
@@ -58,8 +73,8 @@ renderer.listitem = (text: string) => {
 };
 
 // Style links
-renderer.link = (text: string, href: string) => chalk.blue.underline(text);
-(renderer as any).a = (text: string, href: string) => chalk.blue.underline(text);
+renderer.link = (text: string, _href: string) => chalk.blue.underline(text);
+renderer.a = (text: string, _href: string) => chalk.blue.underline(text);
 
 // Style blockquotes
 renderer.blockquote = (quote: string) => {
@@ -72,16 +87,16 @@ renderer.hr = () => chalk.gray('\n' + '─'.repeat(process.stdout.columns || 50)
 
 // Style text decorations
 renderer.del = (text: string) => chalk.strikethrough(text);
-(renderer as any).s = (text: string) => chalk.strikethrough(text);
-(renderer as any).small = (text: string) => chalk.dim(text);
-(renderer as any).mark = (text: string) => chalk.bgYellow.black(text);
-(renderer as any).sub = (text: string) => chalk.dim(text);
-(renderer as any).sup = (text: string) => chalk.dim(text);
+renderer.s = (text: string) => chalk.strikethrough(text);
+renderer.small = (text: string) => chalk.dim(text);
+renderer.mark = (text: string) => chalk.bgYellow.black(text);
+renderer.sub = (text: string) => chalk.dim(text);
+renderer.sup = (text: string) => chalk.dim(text);
 
 // Style definition lists
-(renderer as any).dl = (text: string) => text.split('\n').map(line => `  ${line}`).join('\n');
-(renderer as any).dt = (text: string) => chalk.bold(text) + '\n';
-(renderer as any).dd = (text: string) => `  ${text}\n`;
+renderer.dl = (text: string) => text.split('\n').map(line => `  ${line}`).join('\n');
+renderer.dt = (text: string) => chalk.bold(text) + '\n';
+renderer.dd = (text: string) => `  ${text}\n`;
 
 // Configure marked
 marked.setOptions({

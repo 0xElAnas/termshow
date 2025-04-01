@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { parseMarkdown } from '../src/parser';
 
 describe('Markdown Parser', () => {

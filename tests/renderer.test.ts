@@ -34,7 +34,7 @@ describe('Renderer', () => {
       content: '# Title\n\nContent',
       commands: []
     }];
-    const rendered = renderSlides(slides);
+    renderSlides(slides);
     expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Title'));
     expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Content'));
   });
@@ -45,7 +45,7 @@ describe('Renderer', () => {
       content: '```bash\n$ echo "Hello"\n```',
       commands: [{ command: 'echo "Hello"', autoExecute: true }]
     }];
-    const rendered = renderSlides(slides);
+    renderSlides(slides);
     expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('echo "Hello"'));
   });
 
@@ -58,7 +58,7 @@ describe('Renderer', () => {
         { command: 'cmd2', autoExecute: false }
       ]
     }];
-    const rendered = renderSlides(slides);
+    renderSlides(slides);
     expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('cmd1'));
     expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('cmd2'));
   });

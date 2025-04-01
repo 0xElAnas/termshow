@@ -3,7 +3,7 @@ import chalk from "chalk";
 export function renderTitle(title: string): string {
   // Extract the text content from the styled title
   const titleText = title
-    .replace(/\u001b\[\d+m/g, '') // Remove ANSI color codes
+    .replace(/\[[0-9;]*m/g, '') // Remove ANSI color codes
     .replace(/^#+\s*/, '') // Remove markdown headings
     .trim();
   

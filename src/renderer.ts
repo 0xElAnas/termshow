@@ -6,7 +6,6 @@ import { terminateActiveProcess, hasActiveProcess } from "./commands/live-execut
 
 export function renderSlides(slides: Slide[]) {
   let index = 0;
-  let isExecuting = false;
 
   async function showSlide() {
     // Terminate any running process when changing slides
@@ -65,7 +64,6 @@ export function renderSlides(slides: Slide[]) {
     // If a command is running, any key press should terminate it
     if (hasActiveProcess()) {
       terminateActiveProcess();
-      isExecuting = false;
       showSlide();
       return;
     }
@@ -79,24 +77,20 @@ export function renderSlides(slides: Slide[]) {
     if (key === "\r" || key === "\n") { // Enter key
       // Execute all non-inline commands
       if (executableCommands.length > 0) {
-        isExecuting = true;
         console.log(chalk.cyan('\nExecuting commands...'));
         console.log(chalk.dim('Press any key to stop the process\n'));
         await executeCommands(executableCommands);
-        isExecuting = false;
         return; // Wait for key press before showing slide
       }
     } else if (executableCommands.length > 1 && /^[1-9]$/.test(key)) { // Number keys 1-9
       const commandIndex = parseInt(key) - 1;
       if (commandIndex < executableCommands.length) {
         const cmd = executableCommands[commandIndex];
-        isExecuting = true;
         console.log('\n' + chalk.cyan(`Executing command ${commandIndex + 1}...`) + '\n');
         console.log(chalk.green('$') + ' ' + chalk.yellow(cmd.command));
         console.log(chalk.dim('Press any key to stop the process\n'));
         const output = await executeCommand(cmd.command);
         console.log(output);
-        isExecuting = false;
         console.log('\n' + chalk.dim('Press any key to continue...'));
         return; // Wait for key press before showing slide
       }
