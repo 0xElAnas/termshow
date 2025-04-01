@@ -7,8 +7,10 @@
     "termshow": "bin/termshow.js"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "ts-node src/cli.ts"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "start": "ts-node src/cli.ts",
+    "dev": "ts-node src/cli.ts"
   },
   "dependencies": {
     "@types/figlet": "^1.7.0",
